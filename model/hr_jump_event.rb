@@ -1,0 +1,3 @@
+class HrJumpEvent < Event
+
+end

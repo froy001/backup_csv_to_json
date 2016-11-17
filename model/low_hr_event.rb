@@ -1,0 +1,3 @@
+class LowHrEvent < Event
+
+end

@@ -1,0 +1,3 @@
+class MultiFallTriggerEvent < Event
+
+end
