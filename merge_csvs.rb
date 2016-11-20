@@ -1,3 +1,5 @@
+require 'mongoid'
+require File.expand_path('../model/event.rb', __FILE__)
 require 'csv'
 require 'byebug'
 require 'json'
@@ -6,6 +8,9 @@ require 'benchmark'
 
 Dir["./config/**/*.rb"].each     { |rb| require rb }
 Dir["./model/**/*.rb"].each  { |rb| require rb }
+
+ENV['RACK_ENV'] ||= "development"
+Mongoid.load!("#{Dir.pwd}/config/mongoid.yml")
 
 module MergeCsvs
   $field_map = {"X"=> "accX", "Y"=> "accY", "Z"=> "accZ" \
@@ -17,7 +22,7 @@ module MergeCsvs
 
   $file_name = 'merged_csv.csv'
   $msg_scope_ms = 1000
-  $ts_delta = 86400000 * 2
+  $ts_delta = 86400000
   $ts_label = 'timestamp'
   $accMag = 'accMag'
 
@@ -27,6 +32,8 @@ module MergeCsvs
     input_dirs = Dir.glob("#{root_path}/*/")
     merge_sort_csvs(input_dirs)
     sorted_csv_to_json_array(root_path, $msg_scope_ms, user_id)
+
+    exit 0 if __FILE__ == $0
   end
 
   def self.merge_sort_csvs(input_dirs)
@@ -49,6 +56,7 @@ module MergeCsvs
         # Write rows from each file
         input_files.each do |file|
           CSV.foreach(file, headers: true) do |row|
+            next if row[$ts_label].to_i < 1478822400000
             if row['X'].to_f !=0 && !row['X'].nil?
               row[$accMag] = Math.sqrt(row["X"].to_f ** 2 + row["Y"].to_f ** 2 + row["Z"].to_f ** 2)
             end
@@ -87,6 +95,7 @@ module MergeCsvs
     input_dirs.each do |dir|
       ts_range = nil
       msg = {new_uid:user_id, ts: ts_range, data:{microsoftBandData: {}}}
+      # msg = {ts: ts_range, data:{microsoftBandData: {}}}
       result_msg_array = []
 
       CSV.foreach("#{dir}out_sorted.csv", headers: true).with_index(1) do |row, index|
@@ -102,11 +111,13 @@ module MergeCsvs
           result_msg_array << msg
           ts_range = row[$ts_label].to_i 
           msg = {new_uid:user_id, ts: ts_range, data:{microsoftBandData: {}}}
+          # msg = {ts: ts_range, data:{microsoftBandData: {}}}
           iterate_keys(row, msg)
         end
       end
-      puts "completed csv to json array for #{dir}out_sorted.csv"
+      # save_to_db(result_msg_array, user_id)
       save(dir, result_msg_array)
+      puts "completed csv to json array for #{dir}out_sorted.csv"
     end
   end
 
@@ -168,7 +179,11 @@ module MergeCsvs
   end
 
   def self.save_to_db(array, user_id)
-    
+    user = User.find user_id
+    array.each do |msg|
+      msg = user.messages.new(msg)
+      msg.save(validate: false)
+    end
   end
 
   if __FILE__ == $0

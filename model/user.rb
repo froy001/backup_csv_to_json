@@ -5,7 +5,7 @@ class User
 
   # has_many :authentications
   has_many :devices, inverse_of: :user,  autosave: true
-  has_many :messages, class_name: 'Api::V1::Message',foreign_key: :new_uid
+  has_many :messages, class_name: 'Api::V1::Message', foreign_key: :new_uid
 
   ## Database authenticatable
   # enum :role, [:user, :admin]
