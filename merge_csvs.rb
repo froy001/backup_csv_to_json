@@ -1,16 +1,6 @@
-require 'mongoid'
-require File.expand_path('../model/event.rb', __FILE__)
 require 'csv'
 require 'byebug'
 require 'json'
-require 'shellwords'
-require 'benchmark'
-
-Dir["./config/**/*.rb"].each     { |rb| require rb }
-Dir["./model/**/*.rb"].each  { |rb| require rb }
-
-ENV['RACK_ENV'] ||= "development"
-Mongoid.load!("#{Dir.pwd}/config/mongoid.yml")
 
 module MergeCsvs
   $field_map = {"X"=> "accX", "Y"=> "accY", "Z"=> "accZ" \
