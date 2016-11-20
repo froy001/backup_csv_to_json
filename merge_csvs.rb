@@ -46,7 +46,7 @@ module MergeCsvs
         # Write rows from each file
         input_files.each do |file|
           CSV.foreach(file, headers: true) do |row|
-            next if row[$ts_label].to_i < 1478822400000
+            next if row[$ts_label].to_i > 1478609024931
             if row['X'].to_f !=0 && !row['X'].nil?
               row[$accMag] = Math.sqrt(row["X"].to_f ** 2 + row["Y"].to_f ** 2 + row["Z"].to_f ** 2)
             end
