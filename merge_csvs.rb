@@ -57,7 +57,6 @@ module MergeCsvs
                 row['quality'] = 0              
               end
             end
-
           
             out << all_headers.map { |header| row[header] }
           end
@@ -69,14 +68,27 @@ module MergeCsvs
   end
 
   def self.csv_sort(work_dir)
-    csv = CSV.read("#{work_dir}out.csv").sort! { |a, b| a[0].to_i <=> b[0].to_i }
-    puts "sorting csv"
-    CSV.open("#{work_dir}out_sorted.csv", "w") do |out|
-      csv.each do |each|
-        out<<each
+    begin
+      csv = CSV.read("#{work_dir}out.csv").sort! { |a, b| a[0].to_i <=> b[0].to_i }
+      puts "sorting csv"
+      CSV.open("#{work_dir}out_sorted.csv", "w") do |out|
+        csv.each do |each|
+
+          begin
+            out<<each
+          rescue CSV::MalformedCSVError => er
+            puts er.message
+            puts "In file: #{each.inspect}"
+            next
+          end
+
+        end
       end
+      puts "sorted csv"
+    rescue CSV::MalformedCSVError => er
+      puts er.message
+      puts "In directory: #{work_dir}"
     end
-    puts "sorted csv"
   end
 
   def self.sorted_csv_to_json_array(root_path, sub_size_ms, user_id)
