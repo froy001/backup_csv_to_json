@@ -45,38 +45,55 @@ module MergeCsvs
 
         # Write rows from each file
         input_files.each do |file|
-          CSV.foreach(file, headers: true) do |row|
-            next if row[$ts_label].to_i < 1478822400000
-            if row['X'].to_f !=0 && !row['X'].nil?
-              row[$accMag] = Math.sqrt(row["X"].to_f ** 2 + row["Y"].to_f ** 2 + row["Z"].to_f ** 2)
+          begin
+            CSV.foreach(file, headers: true) do |row|
+                next if (row[$ts_label].to_i > 1478609024931 || row[$ts_label].empty?)
+                if row['X'].to_f !=0 && !row['X'].nil?
+                  row[$accMag] = Math.sqrt(row["X"].to_f ** 2 + row["Y"].to_f ** 2 + row["Z"].to_f ** 2)
+                end
+                unless row['heart_rate'].nil?
+                  if row['quality'] == 'LOCKED'
+                    row['quality'] = 1
+                  else
+                    row['quality'] = 0              
+                  end
+                end
+              
+                out << all_headers.map { |header| row[header] }
             end
-            unless row['heart_rate'].nil?
-              if row['quality'] == 'LOCKED'
-                row['quality'] = 1
-              else
-                row['quality'] = 0              
-              end
-            end
-
-          
-            out << all_headers.map { |header| row[header] }
+          rescue CSV::MalformedCSVError => er
+            puts er.message
+            puts "In file: #{file}"
+            next
           end
         end
+        puts "merged csv #{out}"
       end 
-      puts "merged csv"
       csv_sort(dir)    
     end
   end
 
   def self.csv_sort(work_dir)
-    csv = CSV.read("#{work_dir}out.csv").sort! { |a, b| a[0].to_i <=> b[0].to_i }
-    puts "sorting csv"
-    CSV.open("#{work_dir}out_sorted.csv", "w") do |out|
-      csv.each do |each|
-        out<<each
+    begin
+      csv = CSV.read("#{work_dir}out.csv").sort! { |a, b| a[0].to_i <=> b[0].to_i }
+      puts "sorting csv"
+      CSV.open("#{work_dir}out_sorted.csv", "w") do |out|
+        begin
+          csv.each do |each|
+
+            out<<each
+          end
+        rescue CSV::MalformedCSVError => er
+          puts er.message
+          puts "In file: #{each.inspect}"
+          next
+        end
+        puts "sorted csv #{work_dir}"
       end
+    rescue CSV::MalformedCSVError => er
+      puts er.message
+      puts "In directory: #{work_dir}"
     end
-    puts "sorted csv"
   end
 
   def self.sorted_csv_to_json_array(root_path, sub_size_ms, user_id)
