@@ -1,4 +1,6 @@
 # gemfile.gems generated gem export file. Note that any env variable settings will be missing. Append these after using a ';' field separator
+source 'https://rubygems.org'
+
 ruby "2.2.2"
 gem "activemodel", "~> 5.0.0.1"
 gem "activesupport", "~> 5.0.0.1"
