@@ -1,0 +1,20 @@
+# gemfile.gems generated gem export file. Note that any env variable settings will be missing. Append these after using a ';' field separator
+
+activemodel -v5.0.0.1
+activesupport -v5.0.0.1
+bigdecimal -v1.2.6
+bson -v4.1.1
+bundler -v1.13.6
+byebug -v9.0.6
+concurrent-ruby -v1.0.2
+i18n -v0.7.0
+io-console -v0.4.3
+json -v1.8.1
+minitest -v5.9.1
+mongo -v2.3.1
+mongoid -v6.0.2
+psych -v2.0.8
+rake -v10.4.2
+rdoc -v4.2.0
+thread_safe -v0.3.5
+tzinfo -v1.2.2
