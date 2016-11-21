@@ -1,6 +1,7 @@
 require 'csv'
 require 'byebug'
 require 'json'
+require 'set'
 
 module MergeCsvs
   $field_map = {"X"=> "accX", "Y"=> "accY", "Z"=> "accZ" \
@@ -19,7 +20,7 @@ module MergeCsvs
   def self.run(root_path, user_id=-1)
     Dir.chdir(root_path)
 
-    input_dirs = Dir.glob("#{root_path}/*/")
+    input_dirs = Dir.glob("#{root_path}*/")
     merge_sort_csvs(input_dirs)
     sorted_csv_to_json_array(root_path, $msg_scope_ms, user_id)
 
@@ -41,7 +42,7 @@ module MergeCsvs
       CSV.open("#{dir}out.csv", "w") do |out|
         # Write all headers
         out << all_headers
-      # byebug
+        # byebug
 
         # Write rows from each file
         input_files.each do |file|
@@ -68,9 +69,23 @@ module MergeCsvs
           end
         end
         puts "merged csv #{out}"
-      end 
+      end
+      remove_dups("#{dir}out.csv")
       csv_sort(dir)    
     end
+  end
+
+  def self.remove_dups(file)
+    puts "removing dups #{file}"
+    csv = CSV.open(file)
+    arr = csv.to_a.to_set.to_a
+
+    CSV.open(file, "w") do |out|
+      arr.each do |row|
+        out << row
+      end
+    end 
+    puts "removed dups #{file}"   
   end
 
   def self.csv_sort(work_dir)
