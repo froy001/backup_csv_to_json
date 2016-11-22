@@ -20,7 +20,7 @@ module MergeCsvs
   def self.run(root_path, user_id=-1)
     Dir.chdir(root_path)
 
-    input_dirs = Dir.glob("#{root_path}*/")
+    input_dirs = Dir.glob("#{root_path}/*/")
     merge_sort_csvs(input_dirs)
     sorted_csv_to_json_array(root_path, $msg_scope_ms, user_id)
 
